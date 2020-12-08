@@ -1,0 +1,17 @@
+services:
+  mapper:
+    build:
+      context: .
+    expose:
+      - 80 
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.fastapi.rule=Host(`localhost`)"
+      - "traefik.http.routers.fastapi.tls=true"
+  traefik:
+    image: traefik
+    ports:
+      - "8080:80"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "$PWD/traefik.dev.toml:/etc/traefik/traefik.toml"

@@ -1,0 +1,42 @@
+# motley_cue_docker
+
+Docker image for running the [motley_cue](https://github.com/dianagudu/motley_cue) service, which is based on FastAPI, with Uvicorn managed by Gunicorn.
+
+## Usage
+
+### Prerequisites
+- docker
+- docker-compose
+
+### Run
+```
+docker-compose up
+```
+
+This will run the service at [https://localhost:8080](https://localhost:8080). The API can also be accessed at [https://localhost:8080/docs](https://localhost:8080/docs).
+
+### API calls
+
+Requirements:
+- oidc-agent
+- http
+
+Information about the API:
+```
+http --verify no https://localhost:8080
+```
+
+Information about the service whose users are managed by the API: 
+```
+http --verify no https://localhost:8080/info
+```
+
+Deploy a new user by passing an OIDC access token:
+```
+http --verify no https://localhost:8080/user/deploy  "Authorization: Bearer `oidc-token deep`"
+```
+
+Verify if an access token belongs to an authorized user with the given username:
+```
+http --verify no "https://localhost:8080/verify_user?token=`oidc-token deep`&username=dianagudu"
+```
