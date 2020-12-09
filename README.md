@@ -19,7 +19,7 @@ This will run the service at [https://localhost:8080](https://localhost:8080). T
 
 Requirements:
 - oidc-agent
-- http
+- http / curl
 
 Information about the API:
 ```
@@ -36,7 +36,7 @@ Deploy a new user by passing an OIDC access token:
 http --verify no https://localhost:8080/user/deploy  "Authorization: Bearer `oidc-token deep`"
 ```
 
-Verify if an access token belongs to an authorized user with the given username:
+Verify if a given username matches the local username of an authorised user:
 ```
-http --verify no "https://localhost:8080/verify_user?token=`oidc-token deep`&username=dianagudu"
+http --verify no "https://localhost:8080/verify_user?username=dianagudu" "Authorization: Bearer `oidc-token deep`"
 ```
