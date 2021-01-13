@@ -28,7 +28,7 @@ http --verify no https://localhost:8080
 
 Information about the service whose users are managed by the API: 
 ```
-http --verify no https://localhost:8080/info
+http --verify no https://localhost:8080/info "Authorization: Bearer `oidc-token deep`"
 ```
 
 Deploy a new user by passing an OIDC access token:
