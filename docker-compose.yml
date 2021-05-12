@@ -7,6 +7,7 @@ volumes:
       type: none
       o: bind
       device: "${CONFIG_FOLDER}"
+  motley_cue_sock:
 
 services:
   motley_cue_pam_ssh:
@@ -14,10 +15,21 @@ services:
       context: .
       target: build
     ports:
-      - "8080:8080"
       - "1022:22"
     volumes:
       - config_files:/config_files
+      - motley_cue_sock:/run/motley_cue
+
+  nginx:
+    build:
+      context: .
+      target: nginx_build
+    hostname: "mc_endpoint"
+    ports:
+      - "8080:8080"
+    volumes:
+      - config_files:/config_files:ro
+      - motley_cue_sock:/run/motley_cue
     # labels:
     #   - "traefik.enable=true"
     #   - "traefik.http.routers.fastapi.rule=Host(`localhost`)"

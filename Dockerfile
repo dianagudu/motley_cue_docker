@@ -29,7 +29,7 @@ FROM debian:10 as build
 
 ##### install dependencies
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y ssh dumb-init nginx python3 python3-venv
+RUN apt-get update && apt-get install -y ssh dumb-init python3 python3-venv
 RUN apt-get install -y libpam0g-dev libcurl4-openssl-dev libaudit-dev
 
 ##### motley-cue config
@@ -39,8 +39,6 @@ RUN ln -s /config_files/motley_cue.conf /etc/motley_cue/motley_cue.conf \
     && ln -s /config_files/feudal_adapter.conf /etc/motley_cue/feudal_adapter.conf \
     && ln -s /config_files/motley_cue.env /etc/motley_cue/motley_cue.env \
     && ln -s /config_files/gunicorn.conf.py /etc/motley_cue/gunicorn.conf.py
-RUN ln -s /config_files/nginx.motley_cue /etc/nginx/sites-available/nginx.motley_cue \
-    && ln -s ../sites-available/nginx.motley_cue /etc/nginx/sites-enabled/nginx.motley_cue
 
 ##### pam config
 COPY --from=builder /lib/x86_64-linux-gnu/security/pam_oidc_token.so /lib/x86_64-linux-gnu/security/pam_oidc_token.so
@@ -49,7 +47,7 @@ COPY --from=builder /lib/x86_64-linux-gnu/security/pam_oidc_token.so /lib/x86_64
 RUN CONFIG="/etc/pam.d/pam-ssh-oidc-config.ini" \
     && echo "[user_verification]" > ${CONFIG} \
     && echo "local = false" >> ${CONFIG} \
-    && echo "verify_endpoint = http://localhost:8080/verify_user" >> ${CONFIG}
+    && echo "verify_endpoint = http://mc_endpoint:8080/verify_user" >> ${CONFIG}
 
 RUN CONFIG="/etc/pam.d/sshd" \
     && HEADLINE=`head -n 1 ${CONFIG}` \
@@ -70,10 +68,23 @@ RUN chmod +x /srv/runner.sh
 
 ##### stop services
 RUN service ssh stop
-RUN service nginx stop
 
 ##### expose needed ports
 EXPOSE 22
-EXPOSE 8080
 
 ENTRYPOINT ["/usr/bin/dumb-init", "--", "/srv/runner.sh"]
+
+
+FROM debian:10 as nginx_build
+
+##### install dependencies
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y nginx
+
+RUN ln -s /config_files/nginx.motley_cue /etc/nginx/sites-available/nginx.motley_cue \
+    && ln -s ../sites-available/nginx.motley_cue /etc/nginx/sites-enabled/nginx.motley_cue
+
+##### expose needed ports
+EXPOSE 8080
+
+CMD ["nginx", "-g", "daemon off;"]
