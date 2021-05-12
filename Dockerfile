@@ -34,10 +34,13 @@ RUN apt-get install -y libpam0g-dev libcurl4-openssl-dev libaudit-dev
 
 ##### motley-cue config
 COPY --from=builder /usr/lib/motley-cue /usr/lib/motley-cue
-RUN cp -r /usr/lib/motley-cue/etc/motley_cue /etc/motley_cue
-RUN cp /usr/lib/motley-cue/etc/nginx/nginx.motley_cue /etc/nginx/sites-available \
+RUN mkdir /etc/motley_cue /var/log/motley_cue /run/motley_cue
+RUN ln -s /config_files/motley_cue.conf /etc/motley_cue/motley_cue.conf \
+    && ln -s /config_files/feudal_adapter.conf /etc/motley_cue/feudal_adapter.conf \
+    && ln -s /config_files/motley_cue.env /etc/motley_cue/motley_cue.env \
+    && ln -s /config_files/gunicorn.conf.py /etc/motley_cue/gunicorn.conf.py
+RUN ln -s /config_files/nginx.motley_cue /etc/nginx/sites-available/nginx.motley_cue \
     && ln -s ../sites-available/nginx.motley_cue /etc/nginx/sites-enabled/nginx.motley_cue
-RUN mkdir /var/log/motley_cue /run/motley_cue
 
 ##### pam config
 COPY --from=builder /lib/x86_64-linux-gnu/security/pam_oidc_token.so /lib/x86_64-linux-gnu/security/pam_oidc_token.so
