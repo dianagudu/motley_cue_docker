@@ -87,4 +87,4 @@ RUN ln -s /config_files/nginx.motley_cue /etc/nginx/sites-available/nginx.motley
 ##### expose needed ports
 EXPOSE 8080
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["nginx", "-g", "daemon off;error_log /dev/stdout info;"]
