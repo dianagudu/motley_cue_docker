@@ -1,8 +1,13 @@
-FROM debian:10 as builder
+FROM debian:bullseye as mc_pam_builder
 
 ##### install build dependencies
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y python3 python3-venv git python3-pip libpam0g-dev libcurl4-openssl-dev libaudit-dev
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-venv \
+    python3-pip \
+    git \
+    && rm -rf /var/lib/apt/lists/*
 
 ##### motley-cue: build latest release from source and install to venv
 RUN python3 -m venv /usr/lib/motley-cue
@@ -10,81 +15,71 @@ RUN . /usr/lib/motley-cue/bin/activate \
     && pip3 install -U pip \
     && git clone https://github.com/dianagudu/motley_cue \
     && cd motley_cue \
-    && git checkout $(git tag -l --sort=committerdate | tail -n 1) -b latest \
+    && git checkout \
     && pip install -r requirements.txt \
     && ./setup.py sdist \
     && pip install dist/motley_cue-*.tar.gz
 
+##### TODO: run tests here
+
 ##### pam-ssh: build latest release from source
-RUN mkdir pam-ssh && cd pam-ssh \
-    && git clone https://git.man.poznan.pl/stash/scm/pracelab/pam.git upstream -b develop \
-	&& mv upstream/common upstream/pam-password-token upstream/jsmn-web-tokens . \
-	&& rm -rf upstream \
-	&& rm -f .patched \
-    && cd pam-password-token \
-    && make compile_token && make install_token
+# RUN apt-get update && apt-get install -y libpam0g-dev libcurl4-openssl-dev libaudit-dev
+# RUN mkdir pam-ssh && cd pam-ssh \
+#     && git clone https://git.man.poznan.pl/stash/scm/pracelab/pam.git upstream -b develop \
+#        && mv upstream/common upstream/pam-password-token upstream/jsmn-web-tokens . \
+#        && rm -rf upstream \
+#        && rm -f .patched \
+#     && cd pam-password-token \
+#     && make VERSION=token token && make install_token
 
 
-FROM debian:10 as build
+FROM debian:bullseye as motley_cue_pam_ssh
 
 ##### install dependencies
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y ssh dumb-init python3 python3-venv
-RUN apt-get install -y libpam0g-dev libcurl4-openssl-dev libaudit-dev
+RUN apt-get update && apt-get install -y gnupg curl \
+    && curl repo.data.kit.edu/key.pgp | apt-key add - \
+    && echo "deb https://repo.data.kit.edu/debian/bullseye ./" >> /etc/apt/sources.list
+RUN apt-get update && apt-get install -y \
+    ssh \
+    pam-ssh-oidc \
+    python3 \
+    # libcurl4-gnutls-dev \
+    # libaudit-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 ##### motley-cue config
-COPY --from=builder /usr/lib/motley-cue /usr/lib/motley-cue
-RUN mkdir /etc/motley_cue /var/log/motley_cue /run/motley_cue
-RUN ln -s /config_files/motley_cue.conf /etc/motley_cue/motley_cue.conf \
-    && ln -s /config_files/feudal_adapter.conf /etc/motley_cue/feudal_adapter.conf \
-    && ln -s /config_files/motley_cue.env /etc/motley_cue/motley_cue.env \
-    && ln -s /config_files/gunicorn.conf.py /etc/motley_cue/gunicorn.conf.py
+COPY --from=mc_pam_builder /usr/lib/motley-cue /usr/lib/motley-cue
+RUN mkdir /etc/motley_cue /var/log/motley_cue /run/motley_cue \
+    && cp /usr/lib/motley-cue/etc/motley_cue/gunicorn.conf.py /etc/motley_cue \
+    && ln -s /config_files/motley_cue.conf /etc/motley_cue/motley_cue.conf \
+    && ln -s /config_files/feudal_adapter.conf /etc/motley_cue/feudal_adapter.conf
+ENV FEUDAL_ADAPTER_CONFIG=/etc/motley_cue/feudal_adapter.conf
 
 ##### pam config
-COPY --from=builder /lib/x86_64-linux-gnu/security/pam_oidc_token.so /lib/x86_64-linux-gnu/security/pam_oidc_token.so
-# COPY --from=builder /pam-ssh/pam-password-token/config.ini /etc/pam.d/pam-ssh-config.ini
-# RUN sed -i 's/^local[[:space:]]*=[[:space:]]*true/local = false/g' /etc/pam.d/pam-ssh-config.ini
-RUN CONFIG="/etc/pam.d/pam-ssh-oidc-config.ini" \
-    && echo "[user_verification]" > ${CONFIG} \
-    && echo "local = false" >> ${CONFIG} \
-    && echo "verify_endpoint = http://mc_endpoint:8080/verify_user" >> ${CONFIG}
-
-RUN CONFIG="/etc/pam.d/sshd" \
-    && HEADLINE=`head -n 1 ${CONFIG}` \
-    && mv ${CONFIG} ${CONFIG}.dist \
-    && echo ${HEADLINE} > ${CONFIG} \
-    && echo "" >> ${CONFIG} \
-    && echo "# use pam-ssh-oidc" >> ${CONFIG} \
-    && echo "auth   sufficient pam_oidc_token.so config=/etc/pam.d/pam-ssh-oidc-config.ini" >> ${CONFIG} \
-    && cat ${CONFIG}.dist | grep -v "${HEADLINE}" >> ${CONFIG}
+# COPY --from=mc_pam_builder /lib/x86_64-linux-gnu/security/pam_oidc_token.so /lib/x86_64-linux-gnu/security/pam_oidc_token.so
+COPY pam-ssh-oidc-config.ini /etc/pam.d/pam-ssh-oidc-config.ini
+RUN echo "auth   sufficient pam_oidc_token.so config=/etc/pam.d/pam-ssh-oidc-config.ini\n$(cat /etc/pam.d/sshd)" > /etc/pam.d/sshd
 
 ##### ssh config
 RUN mkdir /run/sshd
-RUN sed -i 's/^ChallengeResponseAuthentication[[:space:]]\+no/ChallengeResponseAuthentication yes/g' /etc/ssh/sshd_config
-
-##### dumb-init config
-ADD --chown=root:root ./runner.sh /srv/runner.sh
-RUN chmod +x /srv/runner.sh
-
-##### stop services
-RUN service ssh stop
+RUN echo "ChallengeResponseAuthentication yes" > /etc/ssh/sshd_config.d/oidc.conf
 
 ##### expose needed ports
 EXPOSE 22
 
-ENTRYPOINT ["/usr/bin/dumb-init", "--", "/srv/runner.sh"]
+RUN service ssh stop
+
+##### init cmd
+COPY ./runner.sh /srv/runner.sh
+COPY ./entrypoint.sh /srv/entrypoint.sh
+RUN chmod +x /srv/runner.sh /srv/entrypoint.sh
+
+ENTRYPOINT [ "/srv/entrypoint.sh" ]
+CMD ["/srv/runner.sh"]
 
 
-FROM debian:10 as nginx_build
 
-##### install dependencies
-ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y nginx
-
-RUN ln -s /config_files/nginx.motley_cue /etc/nginx/sites-available/nginx.motley_cue \
-    && ln -s ../sites-available/nginx.motley_cue /etc/nginx/sites-enabled/nginx.motley_cue
-
-##### expose needed ports
+FROM nginx:alpine as nginx
+COPY --from=mc_pam_builder /usr/lib/motley-cue/etc/nginx/nginx.motley_cue /etc/nginx/conf.d/default.conf
 EXPOSE 8080
-
-CMD ["nginx", "-g", "daemon off;error_log /dev/stdout info;"]

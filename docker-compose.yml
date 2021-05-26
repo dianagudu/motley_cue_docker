@@ -1,43 +1,29 @@
 version: '3'
 
 volumes:
-  config_files:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "${CONFIG_FOLDER}"
   motley_cue_sock:
 
 services:
   motley_cue_pam_ssh:
     build:
       context: .
-      target: build
+      target: motley_cue_pam_ssh
+    init: true
     ports:
       - "1022:22"
+    environment:
+      - UID
+      - GID
     volumes:
-      - config_files:/config_files
+      - ${CONFIG_FOLDER}:/config_files
       - motley_cue_sock:/run/motley_cue
 
   nginx:
     build:
       context: .
-      target: nginx_build
+      target: nginx
     hostname: "mc_endpoint"
     ports:
       - "8080:8080"
     volumes:
-      - config_files:/config_files:ro
       - motley_cue_sock:/run/motley_cue
-    # labels:
-    #   - "traefik.enable=true"
-    #   - "traefik.http.routers.fastapi.rule=Host(`localhost`)"
-    #   - "traefik.http.routers.fastapi.tls=true"
-  # traefik:
-  #   image: traefik
-  #   ports:
-  #     - "8080:80"
-  #   volumes:
-  #     - "/var/run/docker.sock:/var/run/docker.sock:ro"
-  #     - "$PWD/traefik.dev.toml:/etc/traefik/traefik.toml"

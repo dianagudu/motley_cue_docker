@@ -14,29 +14,22 @@ The image contains:
 - docker-compose
 
 ### Run
-First, create a folder where you would like to have your config files located and export the path to `CONFIG_FOLDER` env variable:
-```
-export CONFIG_FOLDER=<your preferred location>
-mkdir $CONFIG_FOLDER
-```
+You'll need to set the following environment variables:
+
+- `CONFIG_FOLDER`: location of config files for the `motley_cue` service (if it doesn't exist, it will be created and populated with the default configs)
+- `UID`: user id to be used when creating the `CONFIG_FOLDER`
+- `GID`: group id to be used when creating the `CONFIG_FOLDER`
+
+The file `.env` contains some default values for these variables, change them as you wish.
 
 Then run:
 ```
 docker-compose up
 ```
 
-<!-- ```
-docker build -t mc_build .
-docker run -d --name mc_build_run -p 8080:8080 -p 22:22 mc_build
-``` -->
+This will expose the motley_cue service on [http://localhost:8080](http://localhost:8080) and the SSH service on port 1022.
 
-This will expose the motley_cue service on [http://localhost:8080](http://localhost:8080) and the SSH service on port 1022. It will also copy default config files in `$CONFIG_FOLDER`.
-<!-- You can change the ports in the `docker run` command above as needed, e.g.:
-```
-docker run -d --name mc_build_run -p 8888:8080 -p 1022:22 mc_build
-``` -->
-
-You can configure the authorisation in `$CONFIG_FOLDER/motley_cue.conf` and restart the containers.
+You can configure the authorisation in `$CONFIG_FOLDER/motley_cue.conf`. Restart the `motley_cue_pam_ssh` container for the changes to take effect.
 
 ### Usage
 
