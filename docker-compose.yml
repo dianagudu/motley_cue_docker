@@ -9,6 +9,7 @@ services:
       context: .
       target: motley_cue_pam_ssh
     init: true
+    restart: on-failure
     ports:
       - "1022:22"
     environment:
@@ -22,6 +23,7 @@ services:
     build:
       context: .
       target: nginx
+    restart: on-failure
     hostname: "mc_endpoint"
     ports:
       - "8080:8080"
