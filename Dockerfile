@@ -45,7 +45,6 @@ RUN apt-get update && apt-get install -y \
 ##### motley-cue config
 COPY --from=mc_pam_builder /usr/lib/motley-cue /usr/lib/motley-cue
 RUN mkdir /etc/motley_cue /var/log/motley_cue /run/motley_cue \
-    && cp /usr/lib/motley-cue/etc/motley_cue/gunicorn.conf.py /etc/motley_cue \
     && ln -s /config_files/motley_cue.conf /etc/motley_cue/motley_cue.conf \
     && ln -s /config_files/feudal_adapter.conf /etc/motley_cue/feudal_adapter.conf
 ENV FEUDAL_ADAPTER_CONFIG=/etc/motley_cue/feudal_adapter.conf
