@@ -40,6 +40,12 @@ RUN apt-get update && apt-get install -y \
     ssh \
     python3 \
     libcurl4 \
+    curl \
+    gnupg2
+RUN echo deb https://repo.data.kit.edu/debian/stable ./ >> /etc/apt/sources.list
+RUN curl repo.data.kit.edu/key.pgp > /etc/apt/trusted.gpg.d/kit-repo.gpg
+RUN apt-get update && apt-get install -y \
+    pam-ssh-oidc \
     && rm -rf /var/lib/apt/lists/*
 
 ##### motley-cue config
@@ -50,7 +56,7 @@ RUN mkdir /etc/motley_cue /var/log/motley_cue /run/motley_cue \
 ENV FEUDAL_ADAPTER_CONFIG=/etc/motley_cue/feudal_adapter.conf
 
 ##### pam config
-COPY --from=mc_pam_builder /lib/x86_64-linux-gnu/security/pam_oidc_token.so /lib/x86_64-linux-gnu/security/pam_oidc_token.so
+# COPY --from=mc_pam_builder /lib/x86_64-linux-gnu/security/pam_oidc_token.so /lib/x86_64-linux-gnu/security/pam_oidc_token.so
 COPY pam-ssh-oidc-config.ini /etc/pam.d/pam-ssh-oidc-config.ini
 RUN echo "auth   sufficient pam_oidc_token.so config=/etc/pam.d/pam-ssh-oidc-config.ini\n$(cat /etc/pam.d/sshd)" > /etc/pam.d/sshd
 
