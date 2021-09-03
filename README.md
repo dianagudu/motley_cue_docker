@@ -35,13 +35,13 @@ You can configure the authorisation in `$CONFIG_FOLDER/motley_cue.conf`. Restart
 
 Requirements:
 - [oidc-agent](https://github.com/indigo-dc/oidc-agent)
-- [mc_ssh](https://github.com/dianagudu/mc_ssh)
+- [mccli](https://github.com/dianagudu/mccli)
 
 [Install](https://indigo-dc.gitbook.io/oidc-agent/installation/install) `oidc-agent` and [configure](https://indigo-dc.gitbook.io/oidc-agent/user/oidc-gen) an account for your preferred OP. The image currently supports [Helmholtz AAI dev](https://login-dev.helmholtz.de/oauth2) and [EGI](https://aai.egi.eu/oidc) OPs.
 
-Install `mc_ssh` simply by:
+Install `mccli` simply by:
 ```
-pip install mc_ssh
+pip install mccli
 ```
 
 To automatically create a user and ssh into your container using a configured oidc-agent account:
