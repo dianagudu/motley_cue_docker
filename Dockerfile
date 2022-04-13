@@ -15,7 +15,7 @@ RUN . /usr/lib/motley-cue/bin/activate \
     && pip3 install -U pip \
     && git clone https://github.com/dianagudu/motley_cue \
     && cd motley_cue \
-    && git checkout \
+    && git checkout long-tokens \
     && pip install -r requirements.txt \
     && ./setup.py sdist \
     && pip install dist/motley_cue-*.tar.gz
