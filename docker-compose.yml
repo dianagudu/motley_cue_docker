@@ -2,19 +2,24 @@ version: '3'
 
 volumes:
   motley_cue_sock:
+networks:
+  my-network:
+    driver: bridge
 
 services:
   motley_cue_pam_ssh:
     build:
       context: .
       target: motley_cue_pam_ssh
-    init: true
-    restart: on-failure
+    hostname: "ssh-host"
     ports:
       - "1022:22"
+    networks:
+      - my-network
     environment:
       - UID
       - GID
+      - SHELL
     volumes:
       - ${CONFIG_FOLDER}:/config_files
       - motley_cue_sock:/run/motley_cue
@@ -23,9 +28,11 @@ services:
     build:
       context: .
       target: nginx
-    restart: on-failure
     hostname: "mc_endpoint"
     ports:
       - "8080:8080"
+    networks:
+      - my-network
     volumes:
+      - ${CONFIG_FOLDER}:/config_files
       - motley_cue_sock:/run/motley_cue
