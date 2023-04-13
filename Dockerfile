@@ -40,8 +40,3 @@ RUN chmod +x /srv/runner.sh /srv/entrypoint.sh
 
 ENTRYPOINT [ "/srv/entrypoint.sh" ]
 CMD ["/srv/runner.sh"]
-
-
-FROM nginx:alpine as nginx
-COPY nginx.motley_cue /etc/nginx/conf.d/default.conf
-EXPOSE 8080

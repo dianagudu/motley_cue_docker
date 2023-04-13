@@ -1,0 +1,13 @@
+providers:
+  - issuer: https://accounts.google.com
+    clientId: GOOGLE_ID
+    clientSecret: GOOGLE_SECRET
+  - issuer: https://iam.deep-hybrid-datacloud.eu
+    clientId: DEEP_ID
+    clientSecret: DEEP_SECRET
+  - issuer: https://login-dev.helmholtz.de/oauth2
+    clientId: HELMHOLTZ_DEV_ID
+    clientSecret: HELMHOLTZ_DEV_SECRET
+  - issuer: https://aai-dev.egi.eu/auth/realms/egi
+    clientId: EGI_DEV_ID
+    clientSecret: EGI_DEV_SECRET
