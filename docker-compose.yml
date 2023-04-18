@@ -26,23 +26,29 @@ services:
     volumes:
       - ${CONFIG_FOLDER}:/config_files
       - motley_cue_sock:/run/motley_cue
+      - ./pam-ssh-oidc-config.ini:/etc/pam.d/pam-ssh-oidc-config.ini
 
   nginx:
     image: nginx
     hostname: "mc_endpoint"
     expose:
-      - 8080
+      - 8443
+      - 443
       - 80
     ports:
-      - "8080:8080"
+      - "8443:8443"
+      - "443:443"
       - "80:80"
     networks:
       - my-network
     volumes:
-      - ./nginx.motley_cue:/etc/nginx/conf.d/default.conf
+      - ./nginx.default:/etc/nginx/conf.d/default.conf
+      - ./nginx.motley_cue:/etc/nginx/conf.d/motley_cue.conf
       - ./nginx.webssh-oidc:/etc/nginx/conf.d/webssh-oidc.conf
       - ${CONFIG_FOLDER}:/config_files
       - motley_cue_sock:/run/motley_cue
+      - ./certbot/www:/var/www/certbot/:ro
+      - ./certbot/conf/:/etc/nginx/ssl/:ro
 
   webssh-oidc:
     image: ddgu/webssh-oidc
@@ -55,3 +61,10 @@ services:
       - .webssh-oidc.env
     volumes:
       - ${CONFIG_FOLDER}:/app/config
+
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - ./certbot/www/:/var/www/certbot/:rw
+      - ./certbot/conf/:/etc/letsencrypt/:rw
+

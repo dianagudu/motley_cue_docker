@@ -1,13 +1,12 @@
-
-upstream localhost {
-    server webssh-oidc:8444;
-}
-
 server {
-    listen 80;
-    listen [::]:80;
+    listen 443 ssl;
+    listen [::]:443 ssl;
 
-    server_name _;
+    server_name ab2ccf04-eb74-4090-93e7-e2abc619ca00.ka.bw-cloud-instance.org;
+
+    ssl_certificate /etc/nginx/ssl/live/ab2ccf04-eb74-4090-93e7-e2abc619ca00.ka.bw-cloud-instance.org/fullchain.pem;
+    ssl_certificate_key /etc/nginx/ssl/live/ab2ccf04-eb74-4090-93e7-e2abc619ca00.ka.bw-cloud-instance.org/privkey.pem;
+
     location / {
         proxy_set_header Host $http_host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -18,5 +17,10 @@ server {
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
+
+        proxy_set_header X-NginX-Proxy true;
+        proxy_read_timeout 5m;
+        proxy_connect_timeout 5m;
+	proxy_redirect off;
     }
 }
