@@ -13,6 +13,7 @@ services:
       context: .
       target: motley_cue_pam_ssh
     hostname: "ssh-host"
+    restart: on-failure
     ports:
       - "1022:22"
     networks:
@@ -53,6 +54,7 @@ services:
   webssh-oidc:
     image: ddgu/webssh-oidc
     hostname: "webssh-oidc"
+    restart: on-failure
     expose:
       - 8444
     networks:
@@ -61,6 +63,7 @@ services:
       - .webssh-oidc.env
     volumes:
       - ${CONFIG_FOLDER}:/app/config
+      - ${CONFIG_FOLDER}/docs:/app/build/client/docs
 
   certbot:
     image: certbot/certbot:latest

@@ -2,7 +2,7 @@ server {
     listen 80;
     listen [::]:80;
 
-    server_name ab2ccf04-eb74-4090-93e7-e2abc619ca00.ka.bw-cloud-instance.org;
+    server_name ssh-oidc-web.vm.fedcloud.eu;
     server_tokens off;
 
     location /.well-known/acme-challenge/ {
@@ -10,6 +10,6 @@ server {
     }
 
     location / {
-        return 301 https://ab2ccf04-eb74-4090-93e7-e2abc619ca00.ka.bw-cloud-instance.org$request_uri;
+        return 301 https://ssh-oidc-web.vm.fedcloud.eu$request_uri;
     }
 }

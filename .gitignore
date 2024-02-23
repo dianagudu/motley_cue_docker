@@ -1,3 +1,4 @@
 config_files
 *.env
 certbot/
+cronjob_renew.log

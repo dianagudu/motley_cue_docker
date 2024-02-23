@@ -2,10 +2,10 @@ server {
     listen 8443 ssl;
     listen [::]:8443 ssl;
 
-    server_name ab2ccf04-eb74-4090-93e7-e2abc619ca00.ka.bw-cloud-instance.org;
+    server_name ssh-oidc-web.vm.fedcloud.eu;
 
-    ssl_certificate /etc/nginx/ssl/live/ab2ccf04-eb74-4090-93e7-e2abc619ca00.ka.bw-cloud-instance.org/fullchain.pem;
-    ssl_certificate_key /etc/nginx/ssl/live/ab2ccf04-eb74-4090-93e7-e2abc619ca00.ka.bw-cloud-instance.org/privkey.pem;
+    ssl_certificate /etc/nginx/ssl/live/ssh-oidc-web.vm.fedcloud.eu/fullchain.pem;
+    ssl_certificate_key /etc/nginx/ssl/live/ssh-oidc-web.vm.fedcloud.eu/privkey.pem;
 
     location / {
         add_header 'Access-Control-Allow-Origin' '*' always;
