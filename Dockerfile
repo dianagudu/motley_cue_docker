@@ -1,4 +1,4 @@
-FROM debian:bullseye as motley_cue_pam_ssh
+FROM debian:bookworm as motley_cue_pam_ssh
 
 ##### install dependencies
 ENV DEBIAN_FRONTEND=noninteractive
@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y \
     ssh \
     curl \
     gpg
-RUN echo deb [signed-by=/etc/apt/trusted.gpg.d/kitrepo-archive.gpg] https://repo.data.kit.edu//debian/bullseye ./ \
+RUN echo deb [signed-by=/etc/apt/trusted.gpg.d/kitrepo-archive.gpg] https://repo.data.kit.edu//debian/bookworm ./ \
     >> /etc/apt/sources.list
 RUN curl repo.data.kit.edu/repo-data-kit-edu-key.gpg \
     | gpg --dearmor \
